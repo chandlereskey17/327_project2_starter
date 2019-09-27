@@ -136,18 +136,38 @@ int writeArraytoFile(const string &outputfilename){
  */
 void sortArray(constants::sortOrder so){
 	string holder;
-
-	//case constants::ASCENDING :
-	for (int i = 0; i < next_slot; i++) {
-		for(int j = i + 1; i < next_slot; i++) {
-			if (g_array[i].word > g_array[j].word) {
-				holder = g_array[i].word;
-				g_array[i].word = g_array[j].word;
-				g_array[j].word = holder;
-			}
-		}
+	switch (so) {
+		case constants::ASCENDING :
+			for (int i = 0; i < next_slot; i++) {
+				for(int j = i + 1; i < next_slot; i++) {
+					if (g_array[i].word > g_array[j].word) {
+						holder = g_array[i].word;
+						g_array[i].word = g_array[j].word;
+						g_array[j].word = holder;
+					}
+				}
+			}break;
+		case constants::DESCENDING :
+			for (int i = 0; i < next_slot; i++) {
+				for(int j = i + 1; i < next_slot; i++) {
+					if (g_array[i].word < g_array[j].word) {
+						holder = g_array[i].word;
+						g_array[i].word = g_array[j].word;
+						g_array[j].word = holder;
+					}
+				}
+			}break;
+		case constants::NUMBER_OCCURRENCES :
+			for (int i = 0; i < next_slot; i++) {
+				for(int j = i + 1; i < next_slot; i++) {
+					if (g_array[i].word == g_array[j].word) {
+						holder = g_array[i].word;
+						g_array[i].word = g_array[j].word;
+						g_array[j].word = holder;
+					}
+				}
+			}break;
 	}
-
 }
 //TODO look in utilities.h for useful functions, particularly strip_unwanted_chars!
 
