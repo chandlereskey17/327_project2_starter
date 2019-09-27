@@ -1,4 +1,7 @@
 /*
+ * Name: Chandler Eskey
+ *
+ *
  * functionstocomplete.cpp
  *
  *  Created on: Sep 10, 2017
