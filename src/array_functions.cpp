@@ -16,6 +16,7 @@
 #include "utilities.h"
 using namespace std;
 const int not_finished = -1;
+
 //============================================================================
 
 //============================================================================
@@ -27,28 +28,27 @@ struct entry {
 	int number_occurences;
 };
 //TODO add a global array of entry structs (global to this file)
-entry g_array[3000];
+entry g_array[constants::MAX_WORDS];
 //TODO add variable to keep track of next available slot in array
-
+int next_slot;
 //TODO define all functions in header file
 
 //zero out array that tracks words and their occurrences
 void clearArray(){
-
+	next_slot = 0;
 }
 
 //how many unique words are in array
 int getArraySize(){
-	return not_finished;
+	return next_slot;
 }
 
 //get data at a particular location
 string getArrayWordAt(int i){
-	std::string not_finished = "Not Finished";
-	return not_finished;
+		return g_array[i].word;
 }
 int getArrayWord_NumbOccur_At(int i){
-	return not_finished;
+		return g_array[i].number_occurences;
 }
 
 /*loop through whole file, one line at a time
@@ -56,11 +56,14 @@ int getArrayWord_NumbOccur_At(int i){
  * returns false: myfstream is not open
  *         true: otherwise*/
 bool processFile(fstream &myfstream){
+
 	if (!myfstream.is_open()) {return false;}
 	string line;
-	while (getline(myfstream, line)) {
+	while (!myfstream.eof()) {
+		getline(myfstream, line);
 		processLine(line);
 	}
+	closeFile(myfstream);
 	return true;
 
 }
@@ -68,15 +71,28 @@ bool processFile(fstream &myfstream){
 /*take 1 line and extract all the tokens from it
 feed each token to processToken for recording*/
 void processLine(string &myString){
-	for (int i = 0; i < myString; i++) {
-
+	stringstream ss(myString);
+	string tempToken;
+	while(getline(ss, tempToken, constants::CHAR_TO_SEARCH_FOR)) {
+		processToken(tempToken);
 	}
-	processToken()
 }
 
 /*Keep track of how many times each token seen*/
 void processToken(string &token){
-
+	if (strip_unwanted_chars(token)){
+		for (int i = 0; i < next_slot; i++) {
+			if (token == g_array[i].word) {
+				g_array[i].number_occurences++;
+				return;
+			}
+		}
+	entry new_entry;
+	g_array[next_slot] = new_entry;
+	g_array[next_slot].word = token;
+	g_array[next_slot].number_occurences = 1;
+	next_slot++;
+	}
 }
 
 /*if you are debugging the file must be in the project parent directory
@@ -100,7 +116,17 @@ void closeFile(fstream& myfile){
  * 			SUCCESS if all data is written and outputfilename closes OK
  * */
 int writeArraytoFile(const string &outputfilename){
-	return not_finished;
+	ofstream output;
+	output.open(outputfilename.c_str());
+	if (!output.is_open()) {return constants::FAIL_FILE_DID_NOT_OPEN;}
+	else if (next_slot == 0) {return constants::FAIL_NO_ARRAY_DATA;}
+
+	for (int i = 0; i < next_slot; i++) {
+		output << g_array[i].word << " " << g_array[i].number_occurences;
+	}
+	output.close();
+
+	return constants::SUCCESS;
 }
 
 /*
@@ -109,6 +135,18 @@ int writeArraytoFile(const string &outputfilename){
  * The presence of the enum implies a switch statement based on its value
  */
 void sortArray(constants::sortOrder so){
+	string holder;
+
+	//case constants::ASCENDING :
+	for (int i = 0; i < next_slot; i++) {
+		for(int j = i + 1; i < next_slot; i++) {
+			if (g_array[i].word > g_array[j].word) {
+				holder = g_array[i].word;
+				g_array[i].word = g_array[j].word;
+				g_array[j].word = holder;
+			}
+		}
+	}
 
 }
 //TODO look in utilities.h for useful functions, particularly strip_unwanted_chars!
