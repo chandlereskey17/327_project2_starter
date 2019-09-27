@@ -10,12 +10,10 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
-#include <array>
 #include "array_functions.h"
 #include "constants.h"
 #include "utilities.h"
 using namespace std;
-const int not_finished = -1;
 
 //============================================================================
 
@@ -30,7 +28,7 @@ struct entry {
 //TODO add a global array of entry structs (global to this file)
 entry g_array[constants::MAX_WORDS];
 //TODO add variable to keep track of next available slot in array
-int next_slot;
+int next_slot = 0;
 //TODO define all functions in header file
 
 //zero out array that tracks words and their occurrences
@@ -82,7 +80,11 @@ void processLine(string &myString){
 void processToken(string &token){
 	if (strip_unwanted_chars(token)){
 		for (int i = 0; i < next_slot; i++) {
-			if (token == g_array[i].word) {
+			string tok = token;
+			string g = g_array[i].word;
+			toUpper(tok);
+			toUpper(g);
+			if (tok == g) {
 				g_array[i].number_occurences++;
 				return;
 			}
@@ -98,8 +100,8 @@ void processToken(string &token){
 /*if you are debugging the file must be in the project parent directory
   in this case Project2 with the .project and .cProject files*/
 bool openFile(fstream& myfile, const string& myFileName,
-		ios_base::openmode){
-	myfile.open (myFileName);
+		ios_base::openmode mode){
+	myfile.open (myFileName.c_str(), mode);
 	if (!myfile.is_open()) {return false;}
 	return true;
 
@@ -117,12 +119,12 @@ void closeFile(fstream& myfile){
  * */
 int writeArraytoFile(const string &outputfilename){
 	ofstream output;
-	output.open(outputfilename.c_str());
+	output.open(outputfilename.c_str(), fstream::out);
 	if (!output.is_open()) {return constants::FAIL_FILE_DID_NOT_OPEN;}
 	else if (next_slot == 0) {return constants::FAIL_NO_ARRAY_DATA;}
 
 	for (int i = 0; i < next_slot; i++) {
-		output << g_array[i].word << " " << g_array[i].number_occurences;
+		output << g_array[i].word << " " << g_array[i].number_occurences << endl;
 	}
 	output.close();
 
@@ -135,38 +137,49 @@ int writeArraytoFile(const string &outputfilename){
  * The presence of the enum implies a switch statement based on its value
  */
 void sortArray(constants::sortOrder so){
-	string holder;
+	entry holder;
+
 	switch (so) {
-		case constants::ASCENDING :
-			for (int i = 0; i < next_slot; i++) {
-				for(int j = i + 1; i < next_slot; i++) {
-					if (g_array[i].word > g_array[j].word) {
-						holder = g_array[i].word;
-						g_array[i].word = g_array[j].word;
-						g_array[j].word = holder;
+		case constants::ASCENDING :{
+			bool switch_around = true;
+			while (switch_around) {
+				switch_around = false;
+				for(int i = 0; i < next_slot - 1; i++) {
+					string first = g_array[i].word;
+					string second = g_array[i + 1].word;
+					toUpper(first);
+					toUpper(second);
+					if (first > second) {
+						holder = g_array[i];
+						g_array[i] = g_array[i + 1];
+						g_array[i + 1] = holder;
+						switch_around = true;
 					}
 				}
 			}break;
-		case constants::DESCENDING :
+		}
+		case constants::DESCENDING :{
 			for (int i = 0; i < next_slot; i++) {
 				for(int j = i + 1; i < next_slot; i++) {
 					if (g_array[i].word < g_array[j].word) {
-						holder = g_array[i].word;
-						g_array[i].word = g_array[j].word;
-						g_array[j].word = holder;
+						holder = g_array[i];
+						g_array[i] = g_array[j];
+						g_array[j] = holder;
 					}
 				}
 			}break;
-		case constants::NUMBER_OCCURRENCES :
+		}
+		case constants::NUMBER_OCCURRENCES :{
 			for (int i = 0; i < next_slot; i++) {
 				for(int j = i + 1; i < next_slot; i++) {
 					if (g_array[i].word == g_array[j].word) {
-						holder = g_array[i].word;
-						g_array[i].word = g_array[j].word;
-						g_array[j].word = holder;
+						holder = g_array[i];
+						g_array[i] = g_array[j];
+						g_array[j] = holder;
 					}
 				}
 			}break;
+		}
 	}
 }
 //TODO look in utilities.h for useful functions, particularly strip_unwanted_chars!
